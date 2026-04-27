@@ -12,10 +12,11 @@ services:
       Cors__AllowedOrigins: http://localhost:4200
       Groq__ApiKey: ${GROQ_API_KEY:-}
       GitHubApp__AppId: ${GITHUB_APP_ID:-}
-      GitHubApp__PrivateKeyPem: ${GITHUB_APP_PRIVATE_KEY:-}
+      GitHubApp__PrivateKeyPath: /secrets/github-app.pem
       GitHubApp__WebhookSecret: ${GITHUB_WEBHOOK_SECRET:-}
     volumes:
       - api-data:/data
+      - ./secrets:/secrets:ro
 
 volumes:
   api-data:

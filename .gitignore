@@ -31,3 +31,6 @@ Thumbs.db
 appsettings.Local.json
 appsettings.*.Local.json
 *.pem
+secrets/*
+!secrets/.gitkeep
+!secrets/README.md

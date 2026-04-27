@@ -40,20 +40,29 @@ A `.pem` file will download. You'll paste its contents into `GITHUB_APP_PRIVATE_
 From the App's page, click **Install App** and select the repo(s) you want
 the bot to review.
 
-## 6. Wire up env vars
+## 6. Wire up secrets locally
 
-For local development, create `.env` in the repo root (gitignored):
+Multi-line PEM values don't survive Docker Compose's `.env` parser, so the local
+flow uses a mounted file:
+
+1. Move the downloaded private key into `./secrets/github-app.pem` at the repo root.
+   The `secrets/` directory is mounted read-only into the API container at
+   `/secrets/github-app.pem` (see `docker-compose.yml`).
+2. Create `.env` at the repo root (gitignored):
 
 ```
-GITHUB_APP_ID=123456
-GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
-...
------END RSA PRIVATE KEY-----"
-GITHUB_WEBHOOK_SECRET=the-secret-you-chose
 GROQ_API_KEY=gsk_xxxxxxxxxxxx
+GITHUB_APP_ID=123456
+GITHUB_WEBHOOK_SECRET=the-secret-you-chose
 ```
 
-For Render, paste the same values into the service's **Environment** tab.
+The API reads the PEM from the mounted file via `GitHubApp__PrivateKeyPath`, so
+the private key never needs to live in `.env`.
+
+For **Render** the multi-line constraint goes away — paste the full PEM content
+directly into the `GitHubApp__PrivateKeyPem` environment variable in the
+service's Environment tab, along with `GitHubApp__AppId`, `GitHubApp__WebhookSecret`,
+and `Groq__ApiKey`.
 
 ## Local development with smee.io
 

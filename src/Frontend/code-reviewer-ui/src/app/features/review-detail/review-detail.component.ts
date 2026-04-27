@@ -6,7 +6,6 @@ import { ReviewComment, ReviewDetail } from '../../core/models/review.model';
 
 @Component({
   selector: 'app-review-detail',
-  standalone: true,
   imports: [CommonModule, RouterLink, DatePipe],
   templateUrl: './review-detail.component.html',
   styleUrl: './review-detail.component.css'
@@ -38,5 +37,11 @@ export class ReviewDetailComponent implements OnInit {
         this.loading.set(false);
       }
     });
+  }
+
+  scoreClass(score: number): string {
+    if (score >= 8) return 'score-high';
+    if (score >= 5) return 'score-mid';
+    return 'score-low';
   }
 }

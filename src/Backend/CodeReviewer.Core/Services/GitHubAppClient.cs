@@ -90,7 +90,7 @@ public class GitHubAppClient : IGitHubAppClient
     private string GenerateJwt()
     {
         var generator = new GitHubJwtFactory(
-            new StringPrivateKeySource(_options.PrivateKeyPem),
+            new StringPrivateKeySource(_options.ResolvePrivateKey()),
             new GitHubJwtFactoryOptions
             {
                 AppIntegrationId = int.Parse(_options.AppId),

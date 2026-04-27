@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
@@ -6,7 +6,6 @@ import { ReviewSummary } from '../../core/models/review.model';
 
 @Component({
   selector: 'app-review-list',
-  standalone: true,
   imports: [CommonModule, RouterLink, DatePipe],
   templateUrl: './review-list.component.html',
   styleUrl: './review-list.component.css'
@@ -18,6 +17,18 @@ export class ReviewListComponent implements OnInit {
   total = signal(0);
   loading = signal(true);
   error = signal<string | null>(null);
+
+  avgScore = computed(() => {
+    const list = this.reviews();
+    if (list.length === 0) return null;
+    const sum = list.reduce((acc, r) => acc + r.score, 0);
+    return Math.round((sum / list.length) * 10) / 10;
+  });
+
+  latest = computed(() => {
+    const list = this.reviews();
+    return list.length === 0 ? null : list[0].createdAt;
+  });
 
   ngOnInit() {
     this.api.listReviews().subscribe({

@@ -1,37 +1,78 @@
 <section class="page">
-  <a routerLink="/" class="back">&larr; back to dashboard</a>
+  <a routerLink="/" class="back">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M19 12H5M12 19l-7-7 7-7" />
+    </svg>
+    Back to dashboard
+  </a>
 
   @if (loading()) {
-    <p>Loading…</p>
+    <div class="state">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Loading review…</p>
+    </div>
   } @else if (error()) {
-    <p class="error">{{ error() }}</p>
+    <div class="state state-error"><p>{{ error() }}</p></div>
   }
 
   @if (review(); as r) {
-    <header>
+    <header class="detail-head">
+      <div class="repo-pill">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+        </svg>
+        {{ r.repoOwner }}/{{ r.repoName }}
+      </div>
       <h1>{{ r.prTitle }}</h1>
-      <p class="muted">
-        <a [href]="r.prUrl" target="_blank" rel="noopener">{{ r.repoOwner }}/{{ r.repoName }}#{{ r.prNumber }}</a>
-        &middot; reviewed {{ r.createdAt | date: 'medium' }}
-        &middot; score <strong>{{ r.score }}/10</strong>
-      </p>
+      <div class="meta-row">
+        <a [href]="r.prUrl" target="_blank" rel="noopener" class="pr-link">
+          PR #{{ r.prNumber }} on GitHub →
+        </a>
+        <span class="meta-dot">·</span>
+        <span>Reviewed {{ r.createdAt | date: 'MMM d, y, h:mm a' }}</span>
+        <span class="meta-dot">·</span>
+        <code class="sha">{{ r.headSha.substring(0, 7) }}</code>
+      </div>
     </header>
 
-    <h2>Summary</h2>
-    <p class="summary">{{ r.summary }}</p>
+    <div class="summary-card">
+      <div class="summary-head">
+        <h2>Summary</h2>
+        <span class="score" [class]="scoreClass(r.score)">
+          <span class="score-num">{{ r.score }}</span>
+          <span class="score-out">/10</span>
+        </span>
+      </div>
+      <p class="summary-text">{{ r.summary }}</p>
+    </div>
 
-    <h2>Inline comments ({{ comments().length }})</h2>
-    @if (comments().length === 0) {
-      <p class="muted">No inline comments were posted for this review.</p>
-    } @else {
-      <ul class="comments">
-        @for (c of comments(); track $index) {
-          <li>
-            <code>{{ c.path }}:{{ c.line }}</code>
-            <p>{{ c.body }}</p>
-          </li>
-        }
-      </ul>
-    }
+    <div class="comments-section">
+      <h2>Inline comments <span class="count">{{ comments().length }}</span></h2>
+      @if (comments().length === 0) {
+        <p class="muted">No inline comments were posted for this review.</p>
+      } @else {
+        <ul class="comments">
+          @for (c of comments(); track $index) {
+            <li class="comment">
+              <header class="comment-head">
+                <span class="file-pill">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <code>{{ c.path }}</code>
+                  <span class="line">:{{ c.line }}</span>
+                </span>
+              </header>
+              <p>{{ c.body }}</p>
+            </li>
+          }
+        </ul>
+      }
+    </div>
   }
 </section>

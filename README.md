@@ -1,7 +1,7 @@
 # AI Code Reviewer
 
 Open-source AI-powered code review bot for GitHub pull requests. Built with
-**.NET 8** + **ASP.NET Core**, **Angular 18**, and **Llama 3.3 70B** running on
+**.NET 10** + **ASP.NET Core**, **Angular 18**, and **Llama 3.3 70B** running on
 the [Groq](https://groq.com) free tier.
 
 When a PR is opened or updated on a repo where the GitHub App is installed,
@@ -13,12 +13,12 @@ Angular dashboard lists every review the bot has ever produced.
 
 | Concern             | Tech                                                |
 |---------------------|-----------------------------------------------------|
-| API                 | ASP.NET Core 8 Web API                              |
+| API                 | ASP.NET Core 10 Web API                             |
 | AI provider         | Groq (`llama-3.3-70b-versatile`, OpenAI-compatible) |
 | GitHub integration  | GitHub App + webhooks, RS256 JWT auth, Octokit.net  |
 | Persistence         | SQLite via EF Core                                  |
 | Background work     | `Channel<T>` + `BackgroundService`                  |
-| Frontend            | Angular 18, standalone components, signals          |
+| Frontend            | Angular 21, standalone components, signals          |
 | Backend hosting     | Render (free web service, Docker)                   |
 | Frontend hosting    | Vercel (free tier)                                  |
 | CI                  | GitHub Actions                                      |
@@ -34,7 +34,7 @@ src/
 │   ├── CodeReviewer.Data/        (EF Core DbContext + migrations)
 │   └── CodeReviewer.Tests/       (xUnit + FluentAssertions + Moq)
 └── Frontend/
-    └── code-reviewer-ui/         (Angular 18, standalone components)
+    └── code-reviewer-ui/         (Angular 21, standalone components)
 docs/
 ├── github-app-setup.md
 └── architecture.md
@@ -46,24 +46,26 @@ See [docs/architecture.md](docs/architecture.md) for the full request flow.
 
 ### 1. Prerequisites
 
-- .NET 8 SDK
-- Node.js 20+
+- .NET 10 SDK
+- Node.js 22+
 - A Groq account (free) and API key — https://console.groq.com
 - A GitHub App configured for a sandbox repo — see
   [docs/github-app-setup.md](docs/github-app-setup.md)
 
 ### 2. Configure secrets
 
-Create `.env` at the repo root (gitignored):
+1. Drop your GitHub App's private key at `secrets/github-app.pem` (the
+   `secrets/` directory is mounted into the API container at runtime).
+2. Create `.env` at the repo root (gitignored):
 
 ```bash
 GROQ_API_KEY=gsk_xxxxxxxx
 GITHUB_APP_ID=123456
-GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
-...
------END RSA PRIVATE KEY-----"
 GITHUB_WEBHOOK_SECRET=your-random-string
 ```
+
+The PEM is loaded from the mounted file — Docker Compose `.env` files don't
+handle multi-line values reliably, so the file mount keeps things simple.
 
 ### 3. Run the API
 
@@ -108,7 +110,9 @@ cd src/Frontend/code-reviewer-ui && npx ng test --watch=false
 
 1. New → Web Service → connect the repo.
 2. Root directory: `src/Backend`. Dockerfile path: `CodeReviewer.Api/Dockerfile`.
-3. Set the same env vars as `.env`, plus:
+3. Set env vars (Render's UI accepts multi-line values, so paste the PEM directly):
+   - `Groq__ApiKey`, `GitHubApp__AppId`, `GitHubApp__WebhookSecret`
+   - `GitHubApp__PrivateKeyPem` — the full PEM contents, including the BEGIN/END lines
    - `ASPNETCORE_URLS=http://+:10000`
    - `ConnectionStrings__Default=Data Source=/tmp/reviews.db`
    - `Cors__AllowedOrigins=https://<your-vercel-domain>`
