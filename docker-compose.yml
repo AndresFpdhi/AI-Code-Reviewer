@@ -1,0 +1,21 @@
+services:
+  api:
+    build:
+      context: ./src/Backend
+      dockerfile: CodeReviewer.Api/Dockerfile
+    ports:
+      - "5000:10000"
+    environment:
+      ASPNETCORE_URLS: http://+:10000
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: Data Source=/data/reviews.db
+      Cors__AllowedOrigins: http://localhost:4200
+      Groq__ApiKey: ${GROQ_API_KEY:-}
+      GitHubApp__AppId: ${GITHUB_APP_ID:-}
+      GitHubApp__PrivateKeyPem: ${GITHUB_APP_PRIVATE_KEY:-}
+      GitHubApp__WebhookSecret: ${GITHUB_WEBHOOK_SECRET:-}
+    volumes:
+      - api-data:/data
+
+volumes:
+  api-data:

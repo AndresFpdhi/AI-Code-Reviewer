@@ -1,0 +1,26 @@
+name: backend-ci
+
+on:
+  push:
+    branches: [main]
+    paths: ['src/Backend/**', '.github/workflows/backend-ci.yml']
+  pull_request:
+    paths: ['src/Backend/**', '.github/workflows/backend-ci.yml']
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/Backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore
+        run: dotnet restore CodeReviewer.slnx
+      - name: Build
+        run: dotnet build CodeReviewer.slnx --no-restore -c Release
+      - name: Test
+        run: dotnet test CodeReviewer.slnx --no-build -c Release --verbosity normal

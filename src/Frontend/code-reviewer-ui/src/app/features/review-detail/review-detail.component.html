@@ -1,0 +1,37 @@
+<section class="page">
+  <a routerLink="/" class="back">&larr; back to dashboard</a>
+
+  @if (loading()) {
+    <p>Loading…</p>
+  } @else if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  @if (review(); as r) {
+    <header>
+      <h1>{{ r.prTitle }}</h1>
+      <p class="muted">
+        <a [href]="r.prUrl" target="_blank" rel="noopener">{{ r.repoOwner }}/{{ r.repoName }}#{{ r.prNumber }}</a>
+        &middot; reviewed {{ r.createdAt | date: 'medium' }}
+        &middot; score <strong>{{ r.score }}/10</strong>
+      </p>
+    </header>
+
+    <h2>Summary</h2>
+    <p class="summary">{{ r.summary }}</p>
+
+    <h2>Inline comments ({{ comments().length }})</h2>
+    @if (comments().length === 0) {
+      <p class="muted">No inline comments were posted for this review.</p>
+    } @else {
+      <ul class="comments">
+        @for (c of comments(); track $index) {
+          <li>
+            <code>{{ c.path }}:{{ c.line }}</code>
+            <p>{{ c.body }}</p>
+          </li>
+        }
+      </ul>
+    }
+  }
+</section>

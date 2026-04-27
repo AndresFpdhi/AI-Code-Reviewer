@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="CodeReviewer.Api/CodeReviewer.Api.csproj" />
+  <Project Path="CodeReviewer.Core/CodeReviewer.Core.csproj" />
+  <Project Path="CodeReviewer.Data/CodeReviewer.Data.csproj" />
+  <Project Path="CodeReviewer.Tests/CodeReviewer.Tests.csproj" />
+</Solution>

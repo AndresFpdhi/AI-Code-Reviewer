@@ -1,0 +1,13 @@
+.page { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+.back { color: #2563eb; text-decoration: none; font-size: .9rem; }
+.back:hover { text-decoration: underline; }
+header { margin: 1rem 0 1.5rem; }
+header h1 { margin: 0 0 .25rem; }
+.muted { color: #6b7280; margin: 0; }
+.error { color: #b91c1c; }
+.summary { background: #f9fafb; border-left: 3px solid #2563eb; padding: 1rem; border-radius: 4px; }
+h2 { margin-top: 2rem; }
+.comments { list-style: none; padding: 0; }
+.comments li { border: 1px solid #e5e7eb; border-radius: 6px; padding: .9rem 1rem; margin-bottom: .75rem; }
+.comments code { background: #f3f4f6; padding: .15rem .4rem; border-radius: 3px; font-size: .85rem; }
+.comments p { margin: .5rem 0 0; }

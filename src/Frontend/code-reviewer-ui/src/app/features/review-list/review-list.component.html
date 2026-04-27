@@ -1,0 +1,41 @@
+<section class="page">
+  <header>
+    <h1>AI Code Review Dashboard</h1>
+    <p class="muted">Reviews posted by the bot to GitHub PRs ({{ total() }} total).</p>
+  </header>
+
+  @if (loading()) {
+    <p>Loading…</p>
+  } @else if (error()) {
+    <p class="error">{{ error() }}</p>
+  } @else if (reviews().length === 0) {
+    <p class="muted">No reviews yet. Open a PR on a repo where the bot is installed.</p>
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>Repo</th>
+          <th>PR</th>
+          <th>Title</th>
+          <th>Score</th>
+          <th>Comments</th>
+          <th>Reviewed</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of reviews(); track r.id) {
+          <tr>
+            <td>{{ r.repoOwner }}/{{ r.repoName }}</td>
+            <td><a [href]="r.prUrl" target="_blank" rel="noopener">#{{ r.prNumber }}</a></td>
+            <td class="title">{{ r.prTitle }}</td>
+            <td><span class="score" [class]="scoreClass(r.score)">{{ r.score }}/10</span></td>
+            <td>{{ r.commentCount }}</td>
+            <td>{{ r.createdAt | date: 'short' }}</td>
+            <td><a [routerLink]="['/reviews', r.id]">view</a></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>

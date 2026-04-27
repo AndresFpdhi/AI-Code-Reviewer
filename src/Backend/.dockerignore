@@ -1,0 +1,8 @@
+**/bin/
+**/obj/
+**/*.db
+**/*.db-journal
+**/.vs/
+**/.vscode/
+**/.idea/
+*.user
