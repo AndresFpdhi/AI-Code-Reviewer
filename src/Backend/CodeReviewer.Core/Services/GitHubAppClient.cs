@@ -1,7 +1,9 @@
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
 using CodeReviewer.Core.Models;
 using CodeReviewer.Core.Options;
-using GitHubJwt;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Octokit;
@@ -89,15 +91,31 @@ public class GitHubAppClient : IGitHubAppClient
 
     private string GenerateJwt()
     {
-        var generator = new GitHubJwtFactory(
-            new StringPrivateKeySource(_options.ResolvePrivateKey()),
-            new GitHubJwtFactoryOptions
-            {
-                AppIntegrationId = int.Parse(_options.AppId),
-                ExpirationSeconds = 540
-            });
-        return generator.CreateEncodedJwtToken();
+        using var rsa = RSA.Create();
+        rsa.ImportFromPem(_options.ResolvePrivateKey());
+
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var headerJson = JsonSerializer.Serialize(new { alg = "RS256", typ = "JWT" });
+        var payloadJson = JsonSerializer.Serialize(new
+        {
+            iat = now - 60,
+            exp = now + 540,
+            iss = _options.AppId
+        });
+
+        var headerB64 = Base64UrlEncode(Encoding.UTF8.GetBytes(headerJson));
+        var payloadB64 = Base64UrlEncode(Encoding.UTF8.GetBytes(payloadJson));
+        var signingInput = $"{headerB64}.{payloadB64}";
+        var signature = rsa.SignData(
+            Encoding.UTF8.GetBytes(signingInput),
+            HashAlgorithmName.SHA256,
+            RSASignaturePadding.Pkcs1);
+
+        return $"{signingInput}.{Base64UrlEncode(signature)}";
     }
+
+    private static string Base64UrlEncode(byte[] data) =>
+        Convert.ToBase64String(data).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 
     private async Task<string> FetchDiffAsync(
         long installationId, string owner, string repo, int prNumber, CancellationToken ct)

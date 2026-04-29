@@ -15,7 +15,7 @@ Angular dashboard lists every review the bot has ever produced.
 |---------------------|-----------------------------------------------------|
 | API                 | ASP.NET Core 10 Web API                             |
 | AI provider         | Groq (`llama-3.3-70b-versatile`, OpenAI-compatible) |
-| GitHub integration  | GitHub App + webhooks, RS256 JWT auth, Octokit.net  |
+| GitHub integration  | GitHub App + webhooks, native `RSA.ImportFromPem` JWT, Octokit.net |
 | Persistence         | SQLite via EF Core                                  |
 | Background work     | `Channel<T>` + `BackgroundService`                  |
 | Frontend            | Angular 21, standalone components, signals          |
@@ -87,15 +87,22 @@ Dashboard at `http://localhost:4200`.
 
 ### 5. Forward webhooks to localhost
 
-GitHub needs a public URL for webhooks. Use [smee.io](https://smee.io):
+GitHub needs a public URL for webhooks. The most reliable free option is
+**Cloudflare's quick tunnel**, run as a Docker container — no install or
+account required:
 
 ```bash
-npm install -g smee-client
-smee -u https://smee.io/<channel> -t http://localhost:5000/api/github/webhook
+docker run --rm cloudflare/cloudflared:latest tunnel --url http://host.docker.internal:5000
 ```
 
-Open a PR on the repo where you installed the GitHub App — within seconds the
-bot will post a review and the dashboard will show the new row.
+It prints a banner with a URL like `https://something-random.trycloudflare.com`.
+Set that URL (with `/api/github/webhook` appended) as your GitHub App's webhook
+URL, save, and open a PR — the bot will post a review within seconds and the
+dashboard will show the new row.
+
+> Alternatives that also work: `ssh -R 80:localhost:5000 nokey@localhost.run`
+> (zero install, but the lhr.life service can be flaky), or `smee.io` (note
+> that recent `smee-client` versions hit an `undici`-related bug on Node 20+).
 
 ## Tests
 
@@ -117,6 +124,12 @@ cd src/Frontend/code-reviewer-ui && npx ng test --watch=false
    - `ConnectionStrings__Default=Data Source=/tmp/reviews.db`
    - `Cors__AllowedOrigins=https://<your-vercel-domain>`
 4. Health check path: `/healthz`.
+
+> **If you're behind a corporate firewall during local development**, outbound
+> HTTPS to `api.groq.com` may be blocked at the network layer (TLS reset). The
+> rest of the pipeline still runs to completion; you just won't get a review
+> back. Run from a home network, mobile hotspot, or a personal VPN to test the
+> full round-trip locally. Render's network has no such restriction.
 
 ### Frontend on Vercel
 
